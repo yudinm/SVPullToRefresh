@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.license  = 'MIT'
   s.summary  = 'Give pull-to-refresh to any UIScrollView with 1 line of code. [Customized]'
   s.homepage = 'https://github.com/samvermette/SVPullToRefresh'
-  s.authors   = { 'Sam Vermette' => 'hello@samvermette.com', 'Michael Yudin' => 'michael.s.yudin@gmail.com' }
+  s.author   = { 'Sam Vermette' => 'hello@samvermette.com', 'Michael Yudin' => 'michael.s.yudin@gmail.com' }
   s.source   = { :git => 'https://github.com/yudinm/SVPullToRefresh.git', :tag => s.version.to_s }
 
   s.description = 'SVPullToRefresh allows you to easily add pull-to-refresh ' \
@@ -17,6 +17,7 @@ Pod::Spec.new do |s|
 
   s.frameworks   = 'QuartzCore'
   s.source_files = 'SVPullToRefresh/*.{h,m}'
+  s.resources = 'SVPullToRefresh/Media.xcassets'
   s.preserve_paths  = 'Demo'
   s.requires_arc = true
 end
