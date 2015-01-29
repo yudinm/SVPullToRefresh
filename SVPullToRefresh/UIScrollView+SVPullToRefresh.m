@@ -47,6 +47,9 @@ static CGFloat const SVPullToRefreshViewHeight = 60;
 @property (nonatomic, assign) BOOL showsDateLabel;
 @property(nonatomic, assign) BOOL isObserving;
 
+@property (nonatomic, strong) UIImageView *imgDraggingAnimation;
+@property (nonatomic, strong) UIImageView *imgLoadingAnimation;
+
 - (void)resetScrollViewContentInset;
 - (void)setScrollViewContentInsetForLoading;
 - (void)setScrollViewContentInset:(UIEdgeInsets)insets;
@@ -90,7 +93,7 @@ static char UIScrollViewPullToRefreshView;
         self.pullToRefreshView = view;
         self.showsPullToRefresh = YES;
     }
-    
+
 }
 
 - (void)addPullToRefreshWithActionHandler:(void (^)(void))actionHandler {
@@ -186,8 +189,12 @@ static char UIScrollViewPullToRefreshView;
                                 nil];
         
         self.subtitles = [NSMutableArray arrayWithObjects:@"", @"", @"", @"", nil];
-        self.viewForState = [NSMutableArray arrayWithObjects:@"", @"", @"", @"", nil];
+        self.viewForState = [NSMutableArray arrayWithObjects:@"", @"", @"", @"", nil];//[@[self.imgDraggingAnimation,self.imgDraggingAnimation,self.imgLoadingAnimation,self.imgLoadingAnimation] mutableCopy];//
         self.wasTriggeredByUser = YES;
+
+        [self setCustomView:self.imgDraggingAnimation forState:SVPullToRefreshStateStopped];
+        [self setCustomView:self.imgDraggingAnimation forState:SVPullToRefreshStateTriggered];
+        [self setCustomView:self.imgLoadingAnimation forState:SVPullToRefreshStateLoading];
     }
     
     return self;
@@ -391,17 +398,30 @@ static char UIScrollViewPullToRefreshView;
 }
 
 - (void)scrollViewDidScroll:(CGPoint)contentOffset {
-    if(self.state != SVPullToRefreshStateLoading) {
-        CGFloat scrollOffsetThreshold = 0;
-        switch (self.position) {
-            case SVPullToRefreshPositionTop:
-                scrollOffsetThreshold = self.frame.origin.y - self.originalTopInset;
-                break;
-            case SVPullToRefreshPositionBottom:
-                scrollOffsetThreshold = MAX(self.scrollView.contentSize.height - self.scrollView.bounds.size.height, 0.0f) + self.bounds.size.height + self.originalBottomInset;
-                break;
+//    NSLog(@"contentOffset.y: %.2f, state: %d",contentOffset.y, self.state);
+    CGFloat scrollOffsetThreshold = 0;
+    switch (self.position) {
+        case SVPullToRefreshPositionTop:
+            scrollOffsetThreshold = self.frame.origin.y - self.originalTopInset;
+            break;
+        case SVPullToRefreshPositionBottom:
+            scrollOffsetThreshold = MAX(self.scrollView.contentSize.height - self.scrollView.bounds.size.height, 0.0f) + self.bounds.size.height + self.originalBottomInset;
+            break;
+    }
+    if (contentOffset.y >= scrollOffsetThreshold) {
+        CGFloat frameH = 1.0f;
+        if (self.imgDraggingAnimation.animationImages.count > 0) {
+            frameH = scrollOffsetThreshold / self.imgDraggingAnimation.animationImages.count;
         }
-        
+        NSUInteger currentImageIndex = fabsf(contentOffset.y / frameH);
+        if (currentImageIndex >= self.imgDraggingAnimation.animationImages.count) {
+            currentImageIndex = self.imgDraggingAnimation.animationImages.count-1;
+        }
+//        NSLog(@"i: %d, h: %.2f",currentImageIndex,frameH);
+        self.imgDraggingAnimation.image = self.imgDraggingAnimation.animationImages[currentImageIndex];
+    }
+
+    if(self.state != SVPullToRefreshStateLoading) {
         if(!self.scrollView.isDragging && self.state == SVPullToRefreshStateTriggered)
             self.state = SVPullToRefreshStateLoading;
         else if(contentOffset.y < scrollOffsetThreshold && self.scrollView.isDragging && self.state == SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionTop)
@@ -412,6 +432,7 @@ static char UIScrollViewPullToRefreshView;
             self.state = SVPullToRefreshStateTriggered;
         else if(contentOffset.y <= scrollOffsetThreshold && self.state != SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionBottom)
             self.state = SVPullToRefreshStateStopped;
+
     } else {
         CGFloat offset;
         UIEdgeInsets contentInset;
@@ -665,6 +686,49 @@ static char UIScrollViewPullToRefreshView;
         self.arrow.layer.opacity = !hide;
         //[self.arrow setNeedsDisplay];//ios 4
     } completion:NULL];
+}
+
+#pragma mark - Custom Animation
+- (UIImageView*)imgDraggingAnimation
+{
+    if (!_imgDraggingAnimation) {
+        //0-11
+        NSArray *imgs = [self loadAnimationImagesWithFirstFrame:0 andLastFrame:11];
+        _imgDraggingAnimation = [[UIImageView alloc] initWithImage:[imgs firstObject]];
+        _imgDraggingAnimation.animationImages = imgs;
+    }
+    return _imgDraggingAnimation;
+}
+
+- (UIImageView*)imgLoadingAnimation
+{
+    if (!_imgLoadingAnimation) {
+        //11-29
+        NSArray *imgs = [self loadAnimationImagesWithFirstFrame:11 andLastFrame:29];
+        _imgLoadingAnimation = [[UIImageView alloc] initWithImage:[imgs firstObject]];
+        _imgLoadingAnimation.animationImages = imgs;
+        _imgLoadingAnimation.animationRepeatCount = 0;
+        _imgLoadingAnimation.animationDuration = 0.7f;
+        [_imgLoadingAnimation startAnimating];
+    }
+    return _imgLoadingAnimation;
+}
+
+- (NSArray*)loadAnimationImagesWithFirstFrame:(NSUInteger)aFirstFrame andLastFrame:(NSUInteger)aLastFrame
+{
+    NSMutableArray *arrAnimImgs = [@[] mutableCopy];
+    for (int i=aFirstFrame; i<aLastFrame+1; i++) {
+        NSString *imgName = [self frameName:i withPrefix:@"trobar_"];
+//        NSLog(@"%@",imgName);
+        [arrAnimImgs addObject:[UIImage imageNamed:imgName]];
+    }
+    return arrAnimImgs;
+}
+
+- (NSString*)frameName:(NSUInteger)aFrameNum withPrefix:(NSString*)aPrefix
+{
+    NSString *format = @"%@%05d";
+    return [NSString stringWithFormat:format, aPrefix, aFrameNum];
 }
 
 @end
