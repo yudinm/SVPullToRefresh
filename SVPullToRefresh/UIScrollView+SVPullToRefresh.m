@@ -417,23 +417,23 @@ static char UIScrollViewPullToRefreshView;
         if (animImgsCount > 0) {
             frameH = scrollOffsetThreshold / animImgsCount;
         }
-//        NSLog(@"1) i: %d, h: %.2f, aic: %d",currentImageIndex,frameH,animImgsCount);
+        //        NSLog(@"1) i: %d, h: %.2f, aic: %d",currentImageIndex,frameH,animImgsCount);
         if (currentImageIndex >= animImgsCount) {
             currentImageIndex = animImgsCount-1;
         }
         if (currentImageIndex < 0) {
             currentImageIndex = 0;
         }
-//        NSLog(@"2) i: %d, h: %.2f",currentImageIndex,frameH);
+        //        NSLog(@"2) i: %d, h: %.2f",currentImageIndex,frameH);
         self.imgDraggingAnimation.image = self.imgDraggingAnimation.animationImages[currentImageIndex];
     }
 
     if(self.state != SVPullToRefreshStateLoading) {
         if(!self.scrollView.isDragging && self.state == SVPullToRefreshStateTriggered)
             self.state = SVPullToRefreshStateLoading;
-        else if(contentOffset.y < scrollOffsetThreshold && self.scrollView.isDragging && self.state == SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionTop)
+        else if(contentOffset.y < scrollOffsetThreshold + topFix && self.scrollView.isDragging && self.state == SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionTop)
             self.state = SVPullToRefreshStateTriggered;
-        else if(contentOffset.y >= scrollOffsetThreshold && self.state != SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionTop)
+        else if(contentOffset.y >= scrollOffsetThreshold + topFix && self.state != SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionTop)
             self.state = SVPullToRefreshStateStopped;
         else if(contentOffset.y > scrollOffsetThreshold && self.scrollView.isDragging && self.state == SVPullToRefreshStateStopped && self.position == SVPullToRefreshPositionBottom)
             self.state = SVPullToRefreshStateTriggered;
@@ -805,8 +805,8 @@ static char UIScrollViewPullToRefreshView;
         colors[7] = 1;
         alphaGradient = CGGradientCreateWithColorComponents(colorSpace,colors,alphaGradientLocations,2);
     }
-
-
+    
+    
     CGContextDrawLinearGradient(c, alphaGradient, CGPointZero, CGPointMake(0, rect.size.height), 0);
     
     CGContextRestoreGState(c);
