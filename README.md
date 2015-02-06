@@ -1,5 +1,9 @@
 # SVPullToRefresh + SVInfiniteScrolling
 
+### Customization: PullToRefresh animated with rotating gray cross while loading.
+
+![SVProgressHUD](https://dl.dropboxusercontent.com/u/6458378/portfolio/SVPullToRefresh-cross.png)
+
 These UIScrollView categories makes it super easy to add pull-to-refresh and infinite scrolling fonctionalities to any UIScrollView (or any of its subclass). Instead of relying on delegates and/or subclassing `UIViewController`, SVPullToRefresh uses the Objective-C runtime to add the following 3 methods to `UIScrollView`:
 
 ```objective-c
