@@ -417,14 +417,14 @@ static char UIScrollViewPullToRefreshView;
         if (animImgsCount > 0) {
             frameH = scrollOffsetThreshold / animImgsCount;
         }
-        NSLog(@"1) i: %d, h: %.2f, aic: %d",currentImageIndex,frameH,animImgsCount);
+//        NSLog(@"1) i: %d, h: %.2f, aic: %d",currentImageIndex,frameH,animImgsCount);
         if (currentImageIndex >= animImgsCount) {
             currentImageIndex = animImgsCount-1;
         }
         if (currentImageIndex < 0) {
             currentImageIndex = 0;
         }
-        NSLog(@"2) i: %d, h: %.2f",currentImageIndex,frameH);
+//        NSLog(@"2) i: %d, h: %.2f",currentImageIndex,frameH);
         self.imgDraggingAnimation.image = self.imgDraggingAnimation.animationImages[currentImageIndex];
     }
 
