@@ -400,27 +400,31 @@ static char UIScrollViewPullToRefreshView;
 - (void)scrollViewDidScroll:(CGPoint)contentOffset {
     //    NSLog(@"contentOffset.y: %.2f, state: %d",contentOffset.y, self.state);
     CGFloat scrollOffsetThreshold = 0;
+    CGFloat topFix = 20.0f + self.originalTopInset;
     switch (self.position) {
         case SVPullToRefreshPositionTop:
-            scrollOffsetThreshold = self.frame.origin.y - self.originalTopInset;
+            scrollOffsetThreshold = self.frame.origin.y - self.originalTopInset - topFix;
             break;
         case SVPullToRefreshPositionBottom:
             scrollOffsetThreshold = MAX(self.scrollView.contentSize.height - self.scrollView.bounds.size.height, 0.0f) + self.bounds.size.height + self.originalBottomInset;
             break;
     }
-    if (contentOffset.y + self.originalTopInset >= scrollOffsetThreshold) {
+
+    if (contentOffset.y >= scrollOffsetThreshold) {
         CGFloat frameH = 1.0f;
-        if (self.imgDraggingAnimation.animationImages.count > 0) {
-            frameH = scrollOffsetThreshold / self.imgDraggingAnimation.animationImages.count;
+        NSInteger currentImageIndex = - (contentOffset.y + topFix) / frameH;
+        NSInteger animImgsCount = self.imgDraggingAnimation.animationImages.count;
+        if (animImgsCount > 0) {
+            frameH = scrollOffsetThreshold / animImgsCount;
         }
-        NSInteger currentImageIndex = fabsf((contentOffset.y + self.originalTopInset) / frameH);
-        if (currentImageIndex >= self.imgDraggingAnimation.animationImages.count) {
-            currentImageIndex = self.imgDraggingAnimation.animationImages.count-1;
+        NSLog(@"1) i: %d, h: %.2f, aic: %d",currentImageIndex,frameH,animImgsCount);
+        if (currentImageIndex >= animImgsCount) {
+            currentImageIndex = animImgsCount-1;
         }
         if (currentImageIndex < 0) {
             currentImageIndex = 0;
         }
-        //        NSLog(@"i: %d, h: %.2f",currentImageIndex,frameH);
+        NSLog(@"2) i: %d, h: %.2f",currentImageIndex,frameH);
         self.imgDraggingAnimation.image = self.imgDraggingAnimation.animationImages[currentImageIndex];
     }
 
